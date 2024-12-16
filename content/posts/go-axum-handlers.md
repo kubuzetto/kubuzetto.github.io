@@ -8,7 +8,6 @@ showFullContent = false
 readingTime = false
 hideComments = true
 toc = true
-draft = true
 +++
 
 ## Introduction
@@ -18,6 +17,12 @@ Rustaceans using the axum framework can employ the
 to write very descriptive handler functions with little boilerplate.
 
 Can we imitate it in Go? Let's find out!
+
+### Why, though?
+
+```
+¯\_(ツ)_/¯
+```
 
 ### Axum's magic functions
 
@@ -30,7 +35,7 @@ dictate how the request is parsed, and how the response is constructed:
 let app = Router::new().route("/users", post(create_user));
 
 async fn create_user(Json(payload): Json<CreateUser>) -> (StatusCode, Json<User>) {
-    (StatusCode::CREATED, Json(User { id: 1337, username: payload.username }))
+	(StatusCode::CREATED, Json(User { id: 1337, username: payload.username }))
 }
 ```
 
@@ -48,7 +53,7 @@ and get access to the database instance from the state at the same time:
 
 ```rust
 async fn get_products(State(db): State<Db>, Query(query): Query<CompanyInfo>, Json(body): Json<ProductFilters>) -> String {
-    ...
+	...
 }
 ```
 
@@ -62,7 +67,7 @@ mux := http.NewServeMux()
 mux.HandleFunc("POST /users", createUser)
 
 func createUser(w http.ResponseWriter, r *http.Request) {
-    // parse input arguments
+	// parse input arguments
 	var payload CreateUser
 	defer func() { _ = r.Body.Close() }()
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -109,7 +114,7 @@ func decodeBodyWith[D interface {
 }](r *http.Request, newDecoderFn func(io.Reader) D, dest any) (err error) {
 	if r.Body != nil {
 		defer func() {
-		    // also join any possible errors from closing the body
+			// also join any possible errors from closing the body
 			err = errors.Join(err, r.Body.Close())
 		}()
 		err = newDecoderFn(r.Body).Decode(&dest)
@@ -158,10 +163,10 @@ func Handler(handler Func) http.HandlerFunc { ... }
 > We cannot describe it ourselves either. If you try to define a constraint like:
 > ```go
 > type Func[R, X, Y, Z, T any] interface {
->     func(X)          (R, error) |
->     func(X, Y)       (R, error) |
->     func(X, Y, Z)    (R, error) |
->     func(X, Y, Z, T) (R, error) // let's say 4 is enough for now
+> 	func(X) (R, error) |
+> 	func(X, Y) (R, error) |
+> 	func(X, Y, Z) (R, error) |
+> 	func(X, Y, Z, T) (R, error) // let's say 4 is enough for now
 > }
 > ```
 > then you _have_ to spell out _all_ of `[R, X, Y, Z, T]` _everywhere_ you try to use it.
@@ -211,23 +216,23 @@ So, the flow becomes:
 func Handler(handler any) http.HandlerFunc {
 	fnVal := reflect.ValueOf(handler)
 	if fnVal.Kind() != reflect.Func {
-		panic(PanicReasonHandlerExpectsAFunc)
+	    panic(PanicReasonHandlerExpectsAFunc)
 	}
 	fnType := fnVal.Type()
 	extractInputs := toExtractorFn(fnType)                 // 0
 	convertOutputs := toOutputHandlerFn(fnType)            //
 	return func(w http.ResponseWriter, r *http.Request) {
-		var response any
-		inputs, err := extractInputs(r)                    // 1
-		if err == nil {
-		    outputs := fnVal.Call(inputs)                  // 2
-			response, err = convertOutputs(outputs)        // 3
-		}
-		if err == nil {
-			_ = WriteResponse(w, response)                 // 4
-		} else {                                           //
-			_ = writeErrResp(w, err)                       //
-		}
+	    var response any
+	    inputs, err := extractInputs(r)                    // 1
+	    if err == nil {
+	        outputs := fnVal.Call(inputs)                  // 2
+	        response, err = convertOutputs(outputs)        // 3
+	    }
+	    if err == nil {
+	        _ = WriteResponse(w, response)                 // 4
+	    } else {                                           //
+	        _ = writeErrResp(w, err)                       //
+	    }
 	}
 }
 ```
@@ -296,16 +301,16 @@ func toExtractorFn(fnType reflect.Type) func(*http.Request) ([]reflect.Value, er
 	numIn := fnType.NumIn()
 	funcs := make([]func(*http.Request) (reflect.Value, error), numIn)
 	for i := range numIn {
-	    // extType is an interface; do the check with Implements
-        if arg := fnType.In(i); arg.Implements(extType) {
+		// extType is an interface; do the check with Implements
+		if arg := fnType.In(i); arg.Implements(extType) {
 			funcs[i] = extractFuncOfType(arg)
-        // also check the pointer of the type for implementing Extractor
+		// also check the pointer of the type for implementing Extractor
 		} else if argPtr := reflect.PointerTo(arg); argPtr.Implements(extType) {
 			funcs[i] = extractFuncOfType(argPtr)
 		// accept context.Context as a valid argument type as well
 		} else if arg.Implements(ctxType) {
 			funcs[i] = extractCtx
-        // anything else is grounds for a panic
+		// anything else is grounds for a panic
 		} else {
 			panic(PanicReasonUnknownArgType)
 		}
@@ -323,9 +328,9 @@ func toExtractorFn(fnType reflect.Type) func(*http.Request) ([]reflect.Value, er
 func extractFuncOfType(arg reflect.Type) func(*http.Request) (reflect.Value, error) {
 	zero := reflect.Zero(arg).Interface().(Extractor)
 	return func(r *http.Request) (reflect.Value, error) {
-	    v, err := zero.Extract(r)
-	    return reflect.ValueOf(v), err
-    }
+		v, err := zero.Extract(r)
+		return reflect.ValueOf(v), err
+	}
 }
 
 func extractCtx(r *http.Request) (reflect.Value, error) {
@@ -340,7 +345,7 @@ const PanicReasonUnknownArgType = "Cannot determine how to extract handler argum
 
 ## Writing the response
 
-> I'm sure there are better, less fragile ways of doing this. This part 
+> I'm sure there are better, less fragile ways of doing this. This part
 > bores me because it's not strictly a part what we are trying to achieve,
 > so I'll half-ass it and write the shortest version that I can.
 
@@ -350,15 +355,24 @@ the status code based on the type of success. Finally, our handlers should be ab
 wrapper types into account. Something like this will do for now:
 
 ```go
+type Responder interface {
+	Response(http.ResponseWriter) error
+}
+
+type StatusCoder interface{ StatusCode() int }
+
 func WriteResponse(w http.ResponseWriter, resp any) (err error) {
 	if s, ok := resp.(Responder); ok {
 		return s.Response(w)
 	}
-	return WriteJSONResponse(w, resp, http.StatusOK)
+	return WriteJSONResponse(w, resp, StatusCodeFrom(resp))
 }
 
-type Responder interface {
-	Response(http.ResponseWriter) error
+func StatusCodeFrom(resp any) (code int) {
+	if s, ok := resp.(StatusCoder); ok {
+		code = s.StatusCode()
+	}
+	return
 }
 
 func WriteJSONResponse(w http.ResponseWriter, resp any, code int) error {
@@ -370,7 +384,7 @@ func WriteJSONResponse(w http.ResponseWriter, resp any, code int) error {
 }
 ```
 
-Nothing much to comment on, really. If the type is `Responder`, use the 
+Nothing much to comment on, really. If the type is `Responder`, use the
 custom response function. Otherwise, write it as JSON. Both functions are
 public because we want to use these in other places soon.
 
@@ -405,13 +419,13 @@ when the arguments cannot be extracted:
 
 ```go
 return func(r *http.Request) (values []reflect.Value, err error) {
-    values = make([]reflect.Value, numIn)
-    for i := 0; err == nil && i < numIn; i++ {
-        values[i], err = funcs[i](r)
-    }
-    // this line is added
-    err = WithStatusCode(err, http.StatusBadRequest)
-    return
+	values = make([]reflect.Value, numIn)
+	for i := 0; err == nil && i < numIn; i++ {
+		values[i], err = funcs[i](r)
+	}
+	// this line is added
+	err = WithStatusCode(err, http.StatusBadRequest)
+	return
 }
 ```
 
@@ -436,13 +450,13 @@ Time for a smoke test!
 func TestHandler(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /users", Handler(createUser))
-    // success case
+	// success case
 	req, _ := http.NewRequest(http.MethodPost, "/users",
 		strings.NewReader(`{"username": "abc"}`))
 	resp := httptest.NewRecorder()
 	mux.ServeHTTP(resp, req)
 	fmt.Printf("%d: %s\n", resp.Code, resp.Body.String())
-    // error case
+	// error case
 	req, _ = http.NewRequest(http.MethodPost, "/users",
 		strings.NewReader(`{{`))
 	resp = httptest.NewRecorder()
@@ -473,7 +487,8 @@ type Extractor interface {
 }
 ```
 
-It defines a _method_ for a type that _constructs_ that type. How can we call the method of a value that doesn't yet exist?
+It defines a _method_ for a type that _constructs_ that type. How can we call the method of a value that doesn't yet
+exist?
 
 Well, this is how we _did_ call it:
 
@@ -481,9 +496,9 @@ Well, this is how we _did_ call it:
 func extractFuncOfType(arg reflect.Type) func(*http.Request) (reflect.Value, error) {
 	zero := reflect.Zero(arg).Interface().(Extractor)
 	return func(r *http.Request) (reflect.Value, error) {
-	    v, err := zero.Extract(r)
-	    return reflect.ValueOf(v), err
-    }
+		v, err := zero.Extract(r)
+		return reflect.ValueOf(v), err
+	}
 }
 ```
 
@@ -502,8 +517,8 @@ value, err := (*JSON[T])(nil).Extract(r)
 
 __We get a panic because `v` is `nil`__.
 
-> Normally, this is a kind of function that would be defined on the __type__, instead of 
-an __instance__ of the type. Rust allows this through traits; but Go does not have the mechanism.
+> Normally, this is a kind of function that would be defined on the __type__, instead of
+> an __instance__ of the type. Rust allows this through traits; but Go does not have the mechanism.
 
 We could "fix" this by making the receiver function pass-by-value instead. However,
 the extractor functions are reused, and so the zero value passed to them is never garbage collected.
@@ -542,16 +557,14 @@ That's an easy fix though:
 
 ```go
 func (v JSON[T]) Response(w http.ResponseWriter) error {
-	return WriteResponse(w, v.V) // delegate to the inner type transparently
+	return WriteJSONResponse(w, v.V, StatusCodeFrom(v.V))
 }
 ```
 
 Also, we want the success case to return `201` instead:
 
 ```go
-func (u User) Response(w http.ResponseWriter) error {
-	return WriteJSONResponse(w, u, http.StatusCreated)
-}
+func (User) StatusCode() int { return http.StatusCreated }
 ```
 
 Finally we have:
@@ -573,9 +586,9 @@ here, hiding the functionality that would normally be a part of a library:
 
 ```go
 func main() {
-    mux := http.NewServeMux()
-    mux.HandleFunc("POST /users", Handler(createUser))
-    ...
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /users", Handler(createUser))
+	...
 }
 
 func createUser(payload JSON[CreateUser]) (response JSON[User], _ error) {
@@ -592,9 +605,7 @@ type User struct {
 	Username string `json:"username"`
 }
 
-func (u User) Response(w http.ResponseWriter) error {
-	return WriteJSONResponse(w, u, http.StatusCreated)
-}
+func (User) StatusCode() int { return http.StatusCreated }
 
 type JSON[Inner any] struct{ V Inner }
 
@@ -604,11 +615,89 @@ func (*JSON[T]) Extract(r *http.Request) (any, error) {
 }
 
 func (v JSON[T]) Response(w http.ResponseWriter) error {
-	return WriteResponse(w, v.V)
+	return WriteJSONResponse(w, v.V, StatusCodeFrom(v.V))
 }
 ```
 
-{{% comment %}}
-    JSON type'ı çok anlamsız oldu, JSON serialization'ı User dikte ediyor!
-    JSON type'ının kendisi bypass etti! Bunu düzelt!
-{{% /comment %}}
+Now we can implement other extractors like `Headers`, `Query` and so on:
+
+```go
+type Headers[Inner any] struct { V Inner }
+
+// usage
+var _ = Headers[struct {
+    X string `header:"x"`
+    Y int    `header:"y"`
+}]
+```
+
+I won't show the implementations for these, because the post is getting long. Long story short, we want to
+check that `Inner` is a struct, then iterate its fields for the `header` tag and extract the relevant header
+from the request. The same logic appears in the
+[gin library](https://github.com/gin-gonic/gin/blob/master/binding/header.go#L19).
+
+Similarly, I think we can implement a `State` type that fetches custom
+data from the request's context, to implement things like `DB`.
+
+### A final touch
+
+In Rust, you can make use of RAII and implement the `Drop` trait for your extractors when they need cleaning up.
+In Go, we can use a `Close() error` function, provided by the `io.Closer` interface. We simply have to check for all
+input types at the end of the handler like this:
+
+```go
+if err == nil {
+    _ = WriteResponse(w, response) // 4
+} else { //
+    _ = writeErrResp(w, err) //
+}
+// code below is added
+for _, e := range inputs {
+    if e.IsValid() { // must check if the value is initialized
+        if c, ok := e.Interface().(io.Closer); ok {
+            _ = c.Close()
+        }
+    }
+}
+```
+
+Here is an example extractor that has a closer:
+
+```go
+type Logger struct{ *slog.Logger }
+
+func (*Logger) Extract(r *http.Request) (any, error) {
+	log := slog.Default().With("route", r.URL.Path, "request_id", uuid.NewString())
+	log.Info("endpoint start")
+	return Logger{Logger: log}, nil
+}
+
+func (l Logger) Close() error {
+	l.Logger.Info("endpoint end")
+	return nil
+}
+
+...
+
+func createUser(l Logger, payload JSON[CreateUser]) (response JSON[User], _ error) {
+	response.V = User{ID: 1337, Username: payload.V.Username}
+	l.Info("created", "user", payload.V.Username)
+	return
+}
+```
+
+We can see the logs:
+
+```
+=== RUN   TestHandler
+2024/12/17 02:24:35 INFO endpoint start route=/users request_id=ce9f5c48-c9af-4492-a862-cb4ca94aadb5
+2024/12/17 02:24:35 INFO created route=/users request_id=ce9f5c48-c9af-4492-a862-cb4ca94aadb5 user=abc
+2024/12/17 02:24:35 INFO endpoint end route=/users request_id=ce9f5c48-c9af-4492-a862-cb4ca94aadb5
+201: {"id":1337,"username":"abc"}
+
+2024/12/17 02:24:35 INFO endpoint start route=/users request_id=16046b80-1de9-4f32-a242-03237aff81c6
+2024/12/17 02:24:35 INFO endpoint end route=/users request_id=16046b80-1de9-4f32-a242-03237aff81c6
+400: {"error":"invalid character '{' looking for beginning of object key string"}
+```
+
+That's all I have for this post. Go now.
