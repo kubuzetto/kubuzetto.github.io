@@ -1,18 +1,30 @@
-name: Deploy Hugo site to Pages
+name: GitHub Pages
 on:
+  pull_request:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
 jobs:
-  build-deploy:
+  deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Publish Site
-        uses: chabad360/hugo-gh-pages@master
+          fetch-depth: 0
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
         with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          hugo-version: 'latest'
+          extended: true
+      - name: Build
+        run: hugo --minify
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
