@@ -1,0 +1,56 @@
+baseURL = '/'
+languageCode = 'en-us'
+title = "kubuzetto's blog"
+theme = 're-terminal'
+description = 'Personal development blog of Devrim Sahin'
+enableRobotsTXT = true
+
+[params]
+contentTypeName = 'posts'
+themeColor = 'orange'
+showLastUpdated = false
+languageName = 'English'
+title = "kubuzetto's blog"
+owner = 'kubuzetto'
+menuMore = 'Show more'
+readMore = 'Read more'
+readOtherPosts = 'Read other posts'
+newerPosts = 'Newer posts'
+olderPosts = 'Older posts'
+missingContentMessage = 'Page not found...'
+missingBackButtonLabel = 'Back to home page'
+minuteReadingTime = 'min read'
+words = 'words'
+
+[params.logo]
+logoText = "kubuzetto's blog"
+logoHomeLink = "/"
+
+# social tags
+[[params.social]]
+name = 'Github'
+icon = 'github'
+url = 'https://github.com/kubuzetto'
+[[params.social]]
+name = 'LinkedIn'
+icon = 'linkedin'
+url = "https://www.linkedin.com/in/devrimsahin/"
+
+# menu
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+[[menu.main]]
+name = "Posts"
+url = "/posts"
+weight = 2
+[[menu.main]]
+pageRef = 'about'
+name = "About"
+url = "/about"
+weight = 3
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 4
