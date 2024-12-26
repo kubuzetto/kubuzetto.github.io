@@ -549,6 +549,8 @@ PASS
 
 The test passes!
 
+> Well _of course_ the test passes; we have `Printf`s instead of assertions. But you get what I mean.
+
 ### Rendering the response properly
 
 ...except the output is a bit weird. We want the `JSON` type to be transparent.
@@ -701,3 +703,7 @@ We can see the logs:
 ```
 
 That's all I have for this post. Go now.
+
+
+---
+[Discuss in Reddit](https://www.reddit.com/r/programming/comments/1hmy79l/axumstyle_magic_handler_functions_in_go/)
