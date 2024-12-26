@@ -410,6 +410,9 @@ Which is not that hard normally; just don&amp;rsquo;t even name the receiver in 
 --- PASS: TestHandler (0.00s)
 PASS
 &lt;/code>&lt;/pre>&lt;p>The test passes!&lt;/p>
+&lt;blockquote>
+&lt;p>Well &lt;em>of course&lt;/em> the test passes; we have &lt;code>Printf&lt;/code>s instead of assertions. But you get what I mean.&lt;/p>
+&lt;/blockquote>
 &lt;h3 id="rendering-the-response-properly">Rendering the response properly&lt;/h3>
 &lt;p>&amp;hellip;except the output is a bit weird. We want the &lt;code>JSON&lt;/code> type to be transparent.&lt;/p>
 &lt;p>That&amp;rsquo;s an easy fix though:&lt;/p>
@@ -520,4 +523,6 @@ input types at the end of the handler like this:&lt;/p>
 2024/12/17 02:24:35 INFO endpoint start route=/users request_id=16046b80-1de9-4f32-a242-03237aff81c6
 2024/12/17 02:24:35 INFO endpoint end route=/users request_id=16046b80-1de9-4f32-a242-03237aff81c6
 400: {&amp;#34;error&amp;#34;:&amp;#34;invalid character &amp;#39;{&amp;#39; looking for beginning of object key string&amp;#34;}
-&lt;/code>&lt;/pre>&lt;p>That&amp;rsquo;s all I have for this post. Go now.&lt;/p></content></item></channel></rss>
+&lt;/code>&lt;/pre>&lt;p>That&amp;rsquo;s all I have for this post. Go now.&lt;/p>
+&lt;hr>
+&lt;p>&lt;a href="https://www.reddit.com/r/programming/comments/1hmy79l/axumstyle_magic_handler_functions_in_go/">Discuss in Reddit&lt;/a>&lt;/p></content></item></channel></rss>
