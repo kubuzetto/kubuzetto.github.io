@@ -416,8 +416,9 @@ We piggybacked on the &lt;code>io.Closer&lt;/code> interface, but if you write y
 in them.&lt;/p>
 &lt;/li>
 &lt;/ul>
+&lt;p>That’s all I have for this post. Go now.&lt;/p>
 &lt;hr>
-&lt;p>That’s all I have for this post. Go now.&lt;/p></content></item><item><title>Axum-style Magic Handler Functions in Go, Part 1</title><link>/posts/go-axum-handlers/</link><pubDate>Sat, 14 Dec 2024 15:30:22 +0300</pubDate><guid>/posts/go-axum-handlers/</guid><description>&lt;blockquote>
+&lt;p>&lt;a href="https://www.reddit.com/r/programming/comments/1hnrsqw/axumstyle_magic_handler_functions_in_go_part_2/">Discuss in Reddit&lt;/a>&lt;/p></content></item><item><title>Axum-style Magic Handler Functions in Go, Part 1</title><link>/posts/go-axum-handlers/</link><pubDate>Sat, 14 Dec 2024 15:30:22 +0300</pubDate><guid>/posts/go-axum-handlers/</guid><description>&lt;blockquote>
 &lt;p>&lt;a href="/posts/go-axum-handlers-pt2/">Part 2 is out!&lt;/a>&lt;/p>
 &lt;/blockquote>
 &lt;h2 id="introduction">Introduction&lt;/h2>
