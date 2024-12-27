@@ -535,4 +535,5 @@ That’s all I have for this post. Go now.
 
 
 ---
-[Discuss in Reddit](https://www.reddit.com/r/programming/comments/1hnrsqw/axumstyle_magic_handler_functions_in_go_part_2/)
+[Discuss in r/programming](https://www.reddit.com/r/programming/comments/1hnrsqw/axumstyle_magic_handler_functions_in_go_part_2/)
+| [Discuss in r/golang](https://www.reddit.com/r/golang/comments/1hnryab/axumstyle_magic_handler_functions_in_go_part_2/)
