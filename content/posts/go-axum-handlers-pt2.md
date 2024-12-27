@@ -531,6 +531,8 @@ It is just more verbose.
   ("Run this one in case of success", "Run this one in any situation") you can implement commit-rollback operations
   in them.
 
----
-
 That’s all I have for this post. Go now.
+
+
+---
+[Discuss in Reddit](https://www.reddit.com/r/programming/comments/1hnrsqw/axumstyle_magic_handler_functions_in_go_part_2/)
