@@ -1,5 +1,5 @@
 +++
-title = "Axum-style Magic Handler Functions in Go"
+title = "Axum-style Magic Handler Functions in Go, Part 1"
 date = "2024-12-14T15:30:22+03:00"
 keywords = ['axum', 'go', 'http']
 description = """Rustaceans using the axum framework can employ the "magic function" pattern to write
@@ -9,6 +9,8 @@ readingTime = false
 hideComments = true
 toc = true
 +++
+
+> [Part 2 is out!](/posts/go-axum-handlers-pt2/)
 
 ## Introduction
 
