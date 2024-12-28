@@ -286,8 +286,8 @@ func extractorFor(argType reflect.Type) func(*http.Request, unsafe.Pointer) erro
 }
 
 func extractFieldOfType(
-    fieldType reflect.Type, fieldOffset uintptr) func(*http.Request, unsafe.Pointer,
-) error {
+    fieldType reflect.Type, fieldOffset uintptr,
+) func(*http.Request, unsafe.Pointer) error {
 	return func(r *http.Request, argBasePtr unsafe.Pointer) error {
 		fieldPtr := unsafe.Add(argBasePtr, fieldOffset)
 		field := reflect.NewAt(fieldType, fieldPtr).Interface()
