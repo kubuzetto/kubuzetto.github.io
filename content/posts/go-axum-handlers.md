@@ -709,4 +709,3 @@ That's all I have for this post. Go now.
 
 ---
 [Discuss in r/programming](https://www.reddit.com/r/programming/comments/1hmy79l/axumstyle_magic_handler_functions_in_go/)
-| [Discuss in r/golang](https://www.reddit.com/r/golang/comments/1hnrvcf/axumstyle_magic_handler_functions_in_go_part_1/)
