@@ -1,5 +1,5 @@
 +++
-title = "Automatic Go union deser dispatch with tags"
+title = "Automatic Go union deserialization dispatch with tags"
 date = "2025-06-02T00:27:23+03:00"
 keywords = ['axum', 'go', 'http']
 description = """Here is another quick use case for the field offset trick we pulled in the previous posts."""
