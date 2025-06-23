@@ -86,7 +86,7 @@ documents separated by a newline:&lt;/p>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{&lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;steve&amp;#34;&lt;/span>}
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I&amp;rsquo;m using JetBrains Goland as IDE, which has support for this if I set the extension to &lt;code>.jsonl&lt;/code>.
 Also, since Extended JSON is syntactically valid JSON, it is compatible with JSONL.&lt;/p>
-&lt;h3 id="walking-the-directories">Walking the Directories&lt;/h3>
+&lt;h3 id="the-code">The code&lt;/h3>
 &lt;p>Let&amp;rsquo;s get cooking then. First, let&amp;rsquo;s grab the mongo driver library:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>go get go.mongodb.org/mongo-driver
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is the only dependency we will need. Our &lt;code>LoadMongoFixtures&lt;/code> function will receive a ref to the
@@ -113,7 +113,8 @@ Also, since Extended JSON is syntactically valid JSON, it is compatible with JSO
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">loadOneMongoFixture&lt;/span>(
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>, &lt;span style="color:#a6e22e">db&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>) &lt;span style="color:#66d9ef">error&lt;/span> { &lt;span style="color:#f92672">...&lt;/span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>walkPaths&lt;/code> returns pairs of file path and collection name strings, which we iterate on and load one by one:&lt;/p>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="walking-the-directories">Walking the directories&lt;/h3>
+&lt;p>&lt;code>walkPaths&lt;/code> returns pairs of file path and collection name strings, which we iterate on and load one by one:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">walkPaths&lt;/span>(&lt;span style="color:#a6e22e">paths&lt;/span> []&lt;span style="color:#66d9ef">string&lt;/span>) ([]&lt;span style="color:#a6e22e">pair&lt;/span>, &lt;span style="color:#66d9ef">error&lt;/span>) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span> []&lt;span style="color:#a6e22e">pair&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">paths&lt;/span> {
@@ -162,7 +163,7 @@ If it is a directory, we walk the dir and load files in it using &lt;code>walkDi
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This one also checks for the file extension.&lt;/p>
-&lt;h3 id="loading-the-fixtures">Loading the Fixtures&lt;/h3>
+&lt;h3 id="loading-the-fixtures">Loading the fixtures&lt;/h3>
 &lt;p>After this we actually load each fixture file using &lt;code>loadOneMongoFixture&lt;/code>.
 The first order of business is to open the file:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">loadOneMongoFixture&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>, &lt;span style="color:#a6e22e">db&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>) &lt;span style="color:#66d9ef">error&lt;/span> {
@@ -208,7 +209,7 @@ of bytes to &lt;code>bson.UnmarshalExtJSON&lt;/code> to obtain a &lt;code>bson.M
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">db&lt;/span>.&lt;span style="color:#a6e22e">Collection&lt;/span>(&lt;span style="color:#a6e22e">collection&lt;/span>).&lt;span style="color:#a6e22e">InsertOne&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">doc&lt;/span>); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot insert document to collection %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="testing-it">Testing it&lt;/h3>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="testing-it">Testing it&lt;/h2>
 &lt;p>We need to test this. First, some helpers:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">testDB&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
@@ -273,7 +274,7 @@ in the &lt;code>posts&lt;/code> collection and decode them in an array of &lt;co
 &lt;pre tabindex="0">&lt;code>=== RUN TestLoadFixtures
 fixture_test.go:44: assertion failed (expected: &amp;lt;nil&amp;gt;, actual: error decoding key published_at: cannot decode embedded document into a time.Time)
 --- FAIL: TestLoadFixtures (0.01s)
-&lt;/code>&lt;/pre>&lt;h3 id="the-hack-or-the-reason-i-wrote-a-blog-post">The hack (or, the reason I wrote a blog post)&lt;/h3>
+&lt;/code>&lt;/pre>&lt;h2 id="the-hack-or-the-reason-i-wrote-a-blog-post">The hack (or, the reason I wrote a blog post)&lt;/h2>
 &lt;p>Ok ummm I may have celebrated prematurely. Apparently, Mongo Compass evaluates this, so does &lt;code>mongoimport&lt;/code>; but
 when you use the insert flow it is treated as a dictionary as-is.&lt;/p>
 &lt;p>Fortunately, there is a catch! &lt;code>UpdateOne&lt;/code> actually &lt;em>does&lt;/em> evaluate expressions in the updated
