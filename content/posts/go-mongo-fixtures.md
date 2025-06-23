@@ -20,7 +20,7 @@ to describe our test data as `.yml` files, which (naturally) does not support Mo
 I wanted a similar approach for MongoDB.
 
 
-### Test Fixtures
+### Test fixtures
 
 In Ruby on Rails, applications with database access are tested using 
 [test fixtures](https://guides.rubyonrails.org/testing.html#fixtures) described in YAML files.
@@ -119,7 +119,7 @@ documents separated by a newline:
 I'm using JetBrains Goland as IDE, which has support for this if I set the extension to `.jsonl`.
 Also, since Extended JSON is syntactically valid JSON, it is compatible with JSONL.
 
-### The code
+## The code
 Let's get cooking then. First, let's grab the mongo driver library:
 
 ```shell
