@@ -119,15 +119,14 @@ documents separated by a newline:
 I'm using JetBrains Goland as IDE, which has support for this if I set the extension to `.jsonl`.
 Also, since Extended JSON is syntactically valid JSON, it is compatible with JSONL.
 
-### Walking the Directories
-
+### The code
 Let's get cooking then. First, let's grab the mongo driver library:
 
 ```shell
 go get go.mongodb.org/mongo-driver
 ```
 
-This is the only dependency we will need. Our `LoadMongoFixtures` function will receive a ref to the 
+This is the only dependency we will need. Our `LoadMongoFixtures` function will receive a ref to the
 `Database`, and a list of paths to load fixtures from:
 
 ```go
@@ -154,6 +153,8 @@ func loadOneMongoFixture(
     ctx context.Context, db *mongo.Database, filePath, collection string,
 ) error { ... }
 ```
+
+### Walking the directories
 
 `walkPaths` returns pairs of file path and collection name strings, which we iterate on and load one by one:
 
@@ -212,7 +213,7 @@ func walkDirs(p string, dir []os.DirEntry, files []pair) []pair {
 
 This one also checks for the file extension.
 
-### Loading the Fixtures
+### Loading the fixtures
 
 After this we actually load each fixture file using `loadOneMongoFixture`.
 The first order of business is to open the file:
@@ -284,7 +285,7 @@ MongoDB here we come!
 		}
 ```
 
-### Testing it
+## Testing it
 
 We need to test this. First, some helpers:
 
@@ -368,7 +369,7 @@ See how we wrote those "now minus 5 minutes" kind of timestamps? Isn't that cool
 --- FAIL: TestLoadFixtures (0.01s)
 ```
 
-### The hack (or, the reason I wrote a blog post)
+## The hack (or, the reason I wrote a blog post)
 
 Ok ummm I may have celebrated prematurely. Apparently, Mongo Compass evaluates this, so does `mongoimport`; but
 when you use the insert flow it is treated as a dictionary as-is.
