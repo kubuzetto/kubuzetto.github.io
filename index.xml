@@ -5,7 +5,7 @@ my approach here.&lt;/p>
 &lt;p>For PostgreSQL, we use &lt;a href="https://github.com/go-testfixtures/testfixtures">go-testfixtures&lt;/a>
 to describe our test data as &lt;code>.yml&lt;/code> files, which (naturally) does not support MongoDB.
 I wanted a similar approach for MongoDB.&lt;/p>
-&lt;h3 id="test-fixtures">Test Fixtures&lt;/h3>
+&lt;h3 id="test-fixtures">Test fixtures&lt;/h3>
 &lt;p>In Ruby on Rails, applications with database access are tested using
 &lt;a href="https://guides.rubyonrails.org/testing.html#fixtures">test fixtures&lt;/a> described in YAML files.
 Before the test, each table is populated with the data described in the corresponding YAML file:&lt;/p></description><content>&lt;h2 id="introduction">Introduction&lt;/h2>
@@ -15,7 +15,7 @@ my approach here.&lt;/p>
 &lt;p>For PostgreSQL, we use &lt;a href="https://github.com/go-testfixtures/testfixtures">go-testfixtures&lt;/a>
 to describe our test data as &lt;code>.yml&lt;/code> files, which (naturally) does not support MongoDB.
 I wanted a similar approach for MongoDB.&lt;/p>
-&lt;h3 id="test-fixtures">Test Fixtures&lt;/h3>
+&lt;h3 id="test-fixtures">Test fixtures&lt;/h3>
 &lt;p>In Ruby on Rails, applications with database access are tested using
 &lt;a href="https://guides.rubyonrails.org/testing.html#fixtures">test fixtures&lt;/a> described in YAML files.
 Before the test, each table is populated with the data described in the corresponding YAML file:&lt;/p>
@@ -86,7 +86,7 @@ documents separated by a newline:&lt;/p>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{&lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;steve&amp;#34;&lt;/span>}
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I&amp;rsquo;m using JetBrains Goland as IDE, which has support for this if I set the extension to &lt;code>.jsonl&lt;/code>.
 Also, since Extended JSON is syntactically valid JSON, it is compatible with JSONL.&lt;/p>
-&lt;h3 id="the-code">The code&lt;/h3>
+&lt;h2 id="the-code">The code&lt;/h2>
 &lt;p>Let&amp;rsquo;s get cooking then. First, let&amp;rsquo;s grab the mongo driver library:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>go get go.mongodb.org/mongo-driver
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is the only dependency we will need. Our &lt;code>LoadMongoFixtures&lt;/code> function will receive a ref to the
