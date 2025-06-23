@@ -1,4 +1,302 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on kubuzetto's blog</title><link>/posts/</link><description>Recent content in Posts on kubuzetto's blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 02 Jun 2025 00:27:23 +0300</lastBuildDate><atom:link href="/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Automatic Go union deserialization dispatch with tags</title><link>/posts/go-deser-dispatch/</link><pubDate>Mon, 02 Jun 2025 00:27:23 +0300</pubDate><guid>/posts/go-deser-dispatch/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on kubuzetto's blog</title><link>/posts/</link><description>Recent content in Posts on kubuzetto's blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 17 Jun 2025 03:50:10 +0300</lastBuildDate><atom:link href="/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Implementing MongoDB Test Fixtures in Go</title><link>/posts/go-mongo-fixtures/</link><pubDate>Tue, 17 Jun 2025 03:50:10 +0300</pubDate><guid>/posts/go-mongo-fixtures/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>At some point in the recent past; I needed to port the integration tests of a Go service using PostgreSQL
+to MongoDB. I was surprised by the lack of resources for loading test fixtures, so I decided to document
+my approach here.&lt;/p>
+&lt;p>For PostgreSQL, we use &lt;a href="https://github.com/go-testfixtures/testfixtures">go-testfixtures&lt;/a>
+to describe our test data as &lt;code>.yml&lt;/code> files, which (naturally) does not support MongoDB.
+I wanted a similar approach for MongoDB.&lt;/p>
+&lt;h3 id="test-fixtures">Test Fixtures&lt;/h3>
+&lt;p>In Ruby on Rails, applications with database access are tested using
+&lt;a href="https://guides.rubyonrails.org/testing.html#fixtures">test fixtures&lt;/a> described in YAML files.
+Before the test, each table is populated with the data described in the corresponding YAML file:&lt;/p></description><content>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>At some point in the recent past; I needed to port the integration tests of a Go service using PostgreSQL
+to MongoDB. I was surprised by the lack of resources for loading test fixtures, so I decided to document
+my approach here.&lt;/p>
+&lt;p>For PostgreSQL, we use &lt;a href="https://github.com/go-testfixtures/testfixtures">go-testfixtures&lt;/a>
+to describe our test data as &lt;code>.yml&lt;/code> files, which (naturally) does not support MongoDB.
+I wanted a similar approach for MongoDB.&lt;/p>
+&lt;h3 id="test-fixtures">Test Fixtures&lt;/h3>
+&lt;p>In Ruby on Rails, applications with database access are tested using
+&lt;a href="https://guides.rubyonrails.org/testing.html#fixtures">test fixtures&lt;/a> described in YAML files.
+Before the test, each table is populated with the data described in the corresponding YAML file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># test/fixtures/users.yml&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">david&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">name&lt;/span>: &lt;span style="color:#ae81ff">David Heinemeier Hansson&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">birthday&lt;/span>: &lt;span style="color:#e6db74">1979-10-15&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">profession&lt;/span>: &lt;span style="color:#ae81ff">Systems development&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">steve&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">name&lt;/span>: &lt;span style="color:#ae81ff">Steve Ross Kellock&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">birthday&lt;/span>: &lt;span style="color:#e6db74">1974-09-27&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">profession&lt;/span>: &lt;span style="color:#ae81ff">guy with keyboard&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This fixture will put two rows in the &lt;code>users&lt;/code> table.&lt;/p>
+&lt;p>&lt;code>go-testfixtures&lt;/code> applies the same approach to Go:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">fixtures&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">testfixtures&lt;/span>.&lt;span style="color:#a6e22e">New&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">testfixtures&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>(&lt;span style="color:#a6e22e">db&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">testfixtures&lt;/span>.&lt;span style="color:#a6e22e">Dialect&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;postgres&amp;#34;&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">testfixtures&lt;/span>.&lt;span style="color:#a6e22e">Paths&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;fixtures/orders.yml&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;fixtures/customers.yml&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;common_fixtures/users&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will load the two files from the &lt;code>fixtures/&lt;/code> directory, as well as any &lt;code>.yml&lt;/code> files under the &lt;code>users/&lt;/code> directory.
+And this can be very useful for integration tests!&lt;/p>
+&lt;blockquote>
+&lt;p>I want to point out two things here.&lt;/p>
+&lt;p>First: one footgun with this approach is that the library &lt;strong>wipes the entire database before
+loading the fixture&lt;/strong>, so you need to make sure you&amp;rsquo;re connected to the correct database.
+This is easily solvable with the &lt;code>testfixtures.DangerousSkipTestDatabaseCheck()&lt;/code> option, which
+ensures that the database name contains &lt;code>test&lt;/code>.&lt;/p>
+&lt;p>Secondly; if you&amp;rsquo;re running queries against an actual database, you cannot parallelize DB-facing tests.
+This is not specific to &lt;code>go-testfixtures&lt;/code> and most organizations are fine with this situation; but if
+you really need parallel testing, I&amp;rsquo;ve seen the &lt;a href="https://github.com/DATA-DOG/go-txdb">begin-query-rollback trick&lt;/a>
+gain some traction lately.&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;code>go-testfixtures&lt;/code> also supports templates, but we don&amp;rsquo;t use this feature. What we &lt;em>do&lt;/em> use is this though:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>- &lt;span style="color:#f92672">id&lt;/span>: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">created_at&lt;/span>: &lt;span style="color:#ae81ff">now()&lt;/span> &lt;span style="color:#75715e"># or, more explicitly, RAW=NOW()&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">updated_at&lt;/span>: &lt;span style="color:#ae81ff">now()&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># ...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>PostgreSQL sees this and evaluates the &lt;code>now()&lt;/code> query as the current timestamp. Passing raw queries like
+this is super useful especially for things like timestamps that need not have a fixed value for the test.
+I&amp;rsquo;d like the same feature in my MongoDB fixture loader.&lt;/p>
+&lt;h3 id="mongodb">MongoDB&lt;/h3>
+&lt;p>MongoDB internally uses a binary format named BSON, but for compatibility reasons a JSON extension named
+&lt;a href="https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/">Extended JSON&lt;/a> is also supported.&lt;/p>
+&lt;p>Extended JSON is valid JSON; but it also preserves things like type information more precisely.
+&lt;code>mongodb&lt;/code> tools like &lt;code>mongoexport&lt;/code> all support Extended JSON.&lt;/p>
+&lt;blockquote>
+&lt;p>Now; you can directly
+&lt;a href="https://www.mongodb.com/resources/languages/json-to-mongodb">import Extended JSON documents&lt;/a>
+into MongoDB using &lt;code>mongoimport&lt;/code>, which is available in the &lt;code>mongo-tools&lt;/code> package.
+But since loading test fixtures is a simple job, and relying on the existence of an
+external CLI tool, and spawning it for every test seems to be a little brittle to me.&lt;/p>
+&lt;/blockquote>
+&lt;p>Cool. So, each collection will be a separate file. Since each collection can have multiple
+documents, we should be able to represent multiple records. I can store the array of records
+as a JSON array; but since JSON disallows trailing commas it would be slightly harder to keep tidy:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>[
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {&lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;david&amp;#34;&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {&lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;steve&amp;#34;&lt;/span>}, &lt;span style="color:#960050;background-color:#1e0010">&amp;lt;-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">syntax&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">error&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">here&lt;/span>, &lt;span style="color:#960050;background-color:#1e0010">due&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">to&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">the&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">extra&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">comma&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">:(&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Instead, we can use the &lt;a href="https://jsonlines.org/">JSON Lines&lt;/a> spec. It is basically multiple JSON
+documents separated by a newline:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>{&lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;david&amp;#34;&lt;/span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{&lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;steve&amp;#34;&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I&amp;rsquo;m using JetBrains Goland as IDE, which has support for this if I set the extension to &lt;code>.jsonl&lt;/code>.
+Also, since Extended JSON is syntactically valid JSON, it is compatible with JSONL.&lt;/p>
+&lt;h3 id="walking-the-directories">Walking the Directories&lt;/h3>
+&lt;p>Let&amp;rsquo;s get cooking then. First, let&amp;rsquo;s grab the mongo driver library:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>go get go.mongodb.org/mongo-driver
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is the only dependency we will need. Our &lt;code>LoadMongoFixtures&lt;/code> function will receive a ref to the
+&lt;code>Database&lt;/code>, and a list of paths to load fixtures from:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">LoadMongoFixtures&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>, &lt;span style="color:#a6e22e">db&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>, &lt;span style="color:#a6e22e">paths&lt;/span> &lt;span style="color:#f92672">...&lt;/span>&lt;span style="color:#66d9ef">string&lt;/span>) &lt;span style="color:#66d9ef">error&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// identify valid fixture files in the given paths
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">walkPaths&lt;/span>(&lt;span style="color:#a6e22e">paths&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot walk paths: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// for each file; load the fixture
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">f&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">loadOneMongoFixture&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">db&lt;/span>, &lt;span style="color:#a6e22e">f&lt;/span>.&lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">f&lt;/span>.&lt;span style="color:#a6e22e">collection&lt;/span>); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">pair&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span>{ &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">walkPaths&lt;/span>(&lt;span style="color:#a6e22e">paths&lt;/span> []&lt;span style="color:#66d9ef">string&lt;/span>) ([]&lt;span style="color:#a6e22e">pair&lt;/span>, &lt;span style="color:#66d9ef">error&lt;/span>) { &lt;span style="color:#f92672">...&lt;/span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">loadOneMongoFixture&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>, &lt;span style="color:#a6e22e">db&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>) &lt;span style="color:#66d9ef">error&lt;/span> { &lt;span style="color:#f92672">...&lt;/span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>walkPaths&lt;/code> returns pairs of file path and collection name strings, which we iterate on and load one by one:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">walkPaths&lt;/span>(&lt;span style="color:#a6e22e">paths&lt;/span> []&lt;span style="color:#66d9ef">string&lt;/span>) ([]&lt;span style="color:#a6e22e">pair&lt;/span>, &lt;span style="color:#66d9ef">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span> []&lt;span style="color:#a6e22e">pair&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">paths&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// stat this path first to see if it&amp;#39;s a file or a directory
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">pathInfo&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">Stat&lt;/span>(&lt;span style="color:#a6e22e">filePath&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span>, &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot stat file %q: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// for files; directly append this as an entry
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> !&lt;span style="color:#a6e22e">pathInfo&lt;/span>.&lt;span style="color:#a6e22e">IsDir&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// if the file is explicitly added; don&amp;#39;t check the extension
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span> = append(&lt;span style="color:#a6e22e">files&lt;/span>, &lt;span style="color:#a6e22e">pair&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">filePath&lt;/span>: &lt;span style="color:#a6e22e">filePath&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">collection&lt;/span>: &lt;span style="color:#a6e22e">strings&lt;/span>.&lt;span style="color:#a6e22e">SplitN&lt;/span>(&lt;span style="color:#a6e22e">filepath&lt;/span>.&lt;span style="color:#a6e22e">Base&lt;/span>(&lt;span style="color:#a6e22e">filePath&lt;/span>), &lt;span style="color:#e6db74">&amp;#34;.&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>)[&lt;span style="color:#ae81ff">0&lt;/span>],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">continue&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// for directories; we should read and iterate them
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">dirInfo&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">ReadDir&lt;/span>(&lt;span style="color:#a6e22e">filePath&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span>, &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot stat dir %q: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">files&lt;/span> = &lt;span style="color:#a6e22e">walkDirs&lt;/span>(&lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">dirInfo&lt;/span>, &lt;span style="color:#a6e22e">files&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span>, &lt;span style="color:#66d9ef">nil&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Nothing too fancy; if the path is a single file; we don&amp;rsquo;t check the extension because it was explicitly added.
+If it is a directory, we walk the dir and load files in it using &lt;code>walkDirs&lt;/code>, which goes like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">walkDirs&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>, &lt;span style="color:#a6e22e">dir&lt;/span> []&lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">DirEntry&lt;/span>, &lt;span style="color:#a6e22e">files&lt;/span> []&lt;span style="color:#a6e22e">pair&lt;/span>) []&lt;span style="color:#a6e22e">pair&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">file&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">dir&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// skip inner dirs
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">file&lt;/span>.&lt;span style="color:#a6e22e">IsDir&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">continue&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// only process json / jsonl files
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">name&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">file&lt;/span>.&lt;span style="color:#a6e22e">Name&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">ext&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">filepath&lt;/span>.&lt;span style="color:#a6e22e">Ext&lt;/span>(&lt;span style="color:#a6e22e">name&lt;/span>); &lt;span style="color:#a6e22e">ext&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;.jsonl&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> &lt;span style="color:#a6e22e">ext&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;.json&amp;#34;&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">continue&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// append the file
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span> = append(&lt;span style="color:#a6e22e">files&lt;/span>, &lt;span style="color:#a6e22e">pair&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">filePath&lt;/span>: &lt;span style="color:#a6e22e">path&lt;/span>.&lt;span style="color:#a6e22e">Join&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>, &lt;span style="color:#a6e22e">name&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">collection&lt;/span>: &lt;span style="color:#a6e22e">strings&lt;/span>.&lt;span style="color:#a6e22e">SplitN&lt;/span>(&lt;span style="color:#a6e22e">name&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;.&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>)[&lt;span style="color:#ae81ff">0&lt;/span>],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">files&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This one also checks for the file extension.&lt;/p>
+&lt;h3 id="loading-the-fixtures">Loading the Fixtures&lt;/h3>
+&lt;p>After this we actually load each fixture file using &lt;code>loadOneMongoFixture&lt;/code>.
+The first order of business is to open the file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">loadOneMongoFixture&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>, &lt;span style="color:#a6e22e">db&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>) &lt;span style="color:#66d9ef">error&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// open the file for streaming
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">file&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">Open&lt;/span>(&lt;span style="color:#a6e22e">filePath&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot open file %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">filePath&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">defer&lt;/span> &lt;span style="color:#66d9ef">func&lt;/span>() { &lt;span style="color:#a6e22e">_&lt;/span> = &lt;span style="color:#a6e22e">file&lt;/span>.&lt;span style="color:#a6e22e">Close&lt;/span>() }()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then we clear the collection:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// clear the collection first
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">db&lt;/span>.&lt;span style="color:#a6e22e">Collection&lt;/span>(&lt;span style="color:#a6e22e">collection&lt;/span>).&lt;span style="color:#a6e22e">DeleteMany&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">M&lt;/span>{}); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot clear collection %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>OK, time to read some JSON lines! Unlike &lt;code>json.Unmarshal&lt;/code>, &lt;code>json.NewDecoder&lt;/code> allows trailing
+tokens in the stream unless explicitly checked against; so we can simply loop with it until &lt;code>.More()&lt;/code> returns false.
+This is better than splitting from newlines; because we actually don&amp;rsquo;t want &lt;em>lines&lt;/em> of JSON:
+A JSON record can have newlines in it due to formatting. What we actually want is JSON after JSON, basically:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// stream the file
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">dec&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">json&lt;/span>.&lt;span style="color:#a6e22e">NewDecoder&lt;/span>(&lt;span style="color:#a6e22e">file&lt;/span>); &lt;span style="color:#a6e22e">dec&lt;/span>.&lt;span style="color:#a6e22e">More&lt;/span>(); { &lt;span style="color:#f92672">...&lt;/span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now is the time to slow down because the boilerplate is over: we are getting into the business logic here.&lt;/p>
+&lt;h3 id="ejson-to-bson">EJSON to BSON&lt;/h3>
+&lt;p>Inside that loop, we should first read one record of Extended JSON, then convert it to BSON.&lt;/p>
+&lt;p>Since EJSON is syntactically valid JSON; we can use the JSON decoder to obtain the boundaries of the message like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// first, decode into a RawMessage. this is necessary only to identify the boundaries of one entry
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">raw&lt;/span> &lt;span style="color:#a6e22e">json&lt;/span>.&lt;span style="color:#a6e22e">RawMessage&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">dec&lt;/span>.&lt;span style="color:#a6e22e">Decode&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">raw&lt;/span>); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot decode fixture %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This reads one JSON record worth of data into a &lt;code>json.RawMessage&lt;/code> chunk, which is &lt;code>[]byte&lt;/code> basically.
+At this point, we had split off one record from an array of EJSON records. Now, we can pass this slice
+of bytes to &lt;code>bson.UnmarshalExtJSON&lt;/code> to obtain a &lt;code>bson.M&lt;/code> map object, which is the actual unmarshalling step:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// now; using the raw message as the input; parse the json into a bson map
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">doc&lt;/span> &lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">M&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">UnmarshalExtJSON&lt;/span>(&lt;span style="color:#a6e22e">raw&lt;/span>, &lt;span style="color:#66d9ef">false&lt;/span>, &lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">doc&lt;/span>); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot unmarshal fixture %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>MongoDB here we come!&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">db&lt;/span>.&lt;span style="color:#a6e22e">Collection&lt;/span>(&lt;span style="color:#a6e22e">collection&lt;/span>).&lt;span style="color:#a6e22e">InsertOne&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">doc&lt;/span>); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot insert document to collection %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="testing-it">Testing it&lt;/h3>
+&lt;p>We need to test this. First, some helpers:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">testDB&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">TestMain&lt;/span>(&lt;span style="color:#a6e22e">m&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">testing&lt;/span>.&lt;span style="color:#a6e22e">M&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">cli&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">mongo&lt;/span>.&lt;span style="color:#a6e22e">Connect&lt;/span>(&lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Background&lt;/span>(),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">options&lt;/span>.&lt;span style="color:#a6e22e">Client&lt;/span>().&lt;span style="color:#a6e22e">ApplyURI&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;mongodb://localhost:27017&amp;#34;&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">log&lt;/span>.&lt;span style="color:#a6e22e">Fatal&lt;/span>(&lt;span style="color:#a6e22e">err&lt;/span>.&lt;span style="color:#a6e22e">Error&lt;/span>())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">testDB&lt;/span> = &lt;span style="color:#a6e22e">cli&lt;/span>.&lt;span style="color:#a6e22e">Database&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;example&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">os&lt;/span>.&lt;span style="color:#a6e22e">Exit&lt;/span>(&lt;span style="color:#a6e22e">m&lt;/span>.&lt;span style="color:#a6e22e">Run&lt;/span>())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">assertEq&lt;/span>(&lt;span style="color:#a6e22e">t&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">testing&lt;/span>.&lt;span style="color:#a6e22e">T&lt;/span>, &lt;span style="color:#a6e22e">expected&lt;/span>, &lt;span style="color:#a6e22e">actual&lt;/span> &lt;span style="color:#a6e22e">any&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">t&lt;/span>.&lt;span style="color:#a6e22e">Helper&lt;/span>(); &lt;span style="color:#a6e22e">expected&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#a6e22e">actual&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">t&lt;/span>.&lt;span style="color:#a6e22e">Fatalf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;assertion failed (expected: %v, actual: %v)&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">expected&lt;/span>, &lt;span style="color:#a6e22e">actual&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>TestMain&lt;/code> sets up our database connection. I hardcoded the database config because
+this is a blog post, cut me some slack here ok? I also threw in &lt;code>assertEq&lt;/code> for shorter code later.&lt;/p>
+&lt;p>Let&amp;rsquo;s write a test:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">Post&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Title&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> &lt;span style="color:#e6db74">`bson:&amp;#34;title&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">PublishedAt&lt;/span> &lt;span style="color:#a6e22e">time&lt;/span>.&lt;span style="color:#a6e22e">Time&lt;/span> &lt;span style="color:#e6db74">`bson:&amp;#34;published_at&amp;#34;`&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> &lt;span style="color:#a6e22e">TestLoadFixtures&lt;/span>(&lt;span style="color:#a6e22e">t&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">testing&lt;/span>.&lt;span style="color:#a6e22e">T&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">ctx&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">t&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">LoadMongoFixtures&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">testDB&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;fixtures/&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">assertEq&lt;/span>(&lt;span style="color:#a6e22e">t&lt;/span>, &lt;span style="color:#66d9ef">nil&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">c&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">testDB&lt;/span>.&lt;span style="color:#a6e22e">Collection&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;posts&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">Find&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">D&lt;/span>{})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">assertEq&lt;/span>(&lt;span style="color:#a6e22e">t&lt;/span>, &lt;span style="color:#66d9ef">nil&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">records&lt;/span> []&lt;span style="color:#a6e22e">Post&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">assertEq&lt;/span>(&lt;span style="color:#a6e22e">t&lt;/span>, &lt;span style="color:#66d9ef">nil&lt;/span>, &lt;span style="color:#a6e22e">c&lt;/span>.&lt;span style="color:#a6e22e">All&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>, &lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">records&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">assertEq&lt;/span>(&lt;span style="color:#a6e22e">t&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>, len(&lt;span style="color:#a6e22e">records&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ok, we simply load the mongo fixtures under the &lt;code>fixtures/&lt;/code> path; then read all entries
+in the &lt;code>posts&lt;/code> collection and decode them in an array of &lt;code>Post&lt;/code>s.&lt;/p>
+&lt;p>Here is our test fixture for this test; &lt;code>fixtures/posts.jsonl&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;title&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Hello world!&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;published_at&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$dateSubtract&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;startDate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;$$NOW&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;unit&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;minute&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;amount&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">10&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;title&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Hello again!&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;published_at&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$dateSubtract&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;startDate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;$$NOW&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;unit&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;minute&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;amount&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">5&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>All we need to do is to spin up a local Mongo instance and run the test.&lt;/p>
+&lt;p>See how we wrote those &amp;ldquo;now minus 5 minutes&amp;rdquo; kind of timestamps? Isn&amp;rsquo;t that cool that MongoDB supports th-&lt;/p>
+&lt;pre tabindex="0">&lt;code>=== RUN TestLoadFixtures
+fixture_test.go:44: assertion failed (expected: &amp;lt;nil&amp;gt;, actual: error decoding key published_at: cannot decode embedded document into a time.Time)
+--- FAIL: TestLoadFixtures (0.01s)
+&lt;/code>&lt;/pre>&lt;h3 id="the-hack-or-the-reason-i-wrote-a-blog-post">The hack (or, the reason I wrote a blog post)&lt;/h3>
+&lt;p>Ok ummm I may have celebrated prematurely. Apparently, Mongo Compass evaluates this, so does &lt;code>mongoimport&lt;/code>; but
+when you use the insert flow it is treated as a dictionary as-is.&lt;/p>
+&lt;p>Fortunately, there is a catch! &lt;code>UpdateOne&lt;/code> actually &lt;em>does&lt;/em> evaluate expressions in the updated
+documents when passed a pipeline. This allows us to pass things like dynamic timestamps using &lt;code>$currentDate&lt;/code>.&lt;/p>
+&lt;p>However, we want to &lt;em>insert&lt;/em> documents, not &lt;em>update&lt;/em> them. Well, how about we do an upsert,
+provide an impossible-to-match filter to it, so it never matches, therefore it always behaves as an insert.&lt;/p>
+&lt;p>Since all documents in Mongo have an &lt;code>_id&lt;/code> field, we can check for its absence.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// replacing the InsertOne with this
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">_&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span> = &lt;span style="color:#a6e22e">db&lt;/span>.&lt;span style="color:#a6e22e">Collection&lt;/span>(&lt;span style="color:#a6e22e">collection&lt;/span>).&lt;span style="color:#a6e22e">UpdateOne&lt;/span>(&lt;span style="color:#a6e22e">ctx&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// &amp;#34;update the documents without an _id field&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">M&lt;/span>{&lt;span style="color:#e6db74">&amp;#34;_id&amp;#34;&lt;/span>: &lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">M&lt;/span>{&lt;span style="color:#e6db74">&amp;#34;$exists&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">false&lt;/span>}},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// this has to be an array for it to be considered a pipeline
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> []&lt;span style="color:#a6e22e">bson&lt;/span>.&lt;span style="color:#a6e22e">M&lt;/span>{{&lt;span style="color:#e6db74">&amp;#34;$set&amp;#34;&lt;/span>: &lt;span style="color:#a6e22e">doc&lt;/span>}},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// setUpsert lets us abuse this to behave as an insert
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">options&lt;/span>.&lt;span style="color:#a6e22e">Update&lt;/span>().&lt;span style="color:#a6e22e">SetUpsert&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ); &lt;span style="color:#a6e22e">err&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">nil&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fmt&lt;/span>.&lt;span style="color:#a6e22e">Errorf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;cannot insert document to collection %s: %w&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">collection&lt;/span>, &lt;span style="color:#a6e22e">err&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>When we run it again the test passes!&lt;/p>
+&lt;pre tabindex="0">&lt;code>=== RUN TestLoadFixtures
+--- PASS: TestLoadFixtures (0.01s)
+&lt;/code>&lt;/pre>&lt;p>If we add extra assertions, we see that the timestamps are correctly evaluated.&lt;/p>
+&lt;p>That&amp;rsquo;s all I have for tonight. Go now.&lt;/p></content></item><item><title>Automatic Go Union Deserialization Dispatch with Tags</title><link>/posts/go-deser-dispatch/</link><pubDate>Mon, 02 Jun 2025 00:27:23 +0300</pubDate><guid>/posts/go-deser-dispatch/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>Ok, this will be a short one.&lt;/p>
 &lt;p>In the &lt;a href="/posts/go-axum-handlers-pt2/">previous posts&lt;/a>; we tried to reduce endpoint handler boilerplate in Go
 by imitating the Axum magic functions. This post is &lt;em>&lt;strong>not&lt;/strong>&lt;/em> about that, but I think one of the tricks we
