@@ -1,7 +1,7 @@
 +++
-title = "Automatic Go union deserialization dispatch with tags"
+title = "Automatic Go Union Deserialization Dispatch with Tags"
 date = "2025-06-02T00:27:23+03:00"
-keywords = ['axum', 'go', 'http']
+keywords = ['go', 'http', 'reflection']
 description = """Here is another quick use case for the field offset trick we pulled in the previous posts."""
 showFullContent = false
 readingTime = false
