@@ -17,7 +17,7 @@ not standard SQL syntax, but an extension, like SQLite's `INSERT OR REPLACE`.
 
 Let's say we have a table named `tasks` like this:
 
-```postgresql
+```sql
 create table if not exists tasks
 (
     account_id integer not null,
@@ -29,7 +29,7 @@ create table if not exists tasks
 
 Say we want tasks to have unique names for each account. Let's define a unique index for it:
 
-```postgresql
+```sql
 create unique index if not exists unq_tasks_index
     on tasks (account_id, task_name);
 ```
@@ -40,7 +40,7 @@ an existing task, or creates one anew. I don't know; I just want to get to the p
 
 To **upsert**; we can write the following query:
 
-```postgresql
+```sql
 insert into tasks (account_id, task_name, task_desc)
 values (1, 'test task', 'This is a test task')
 on conflict (account_id, task_name)
@@ -56,7 +56,7 @@ This does one of two things, atomically:
 (Perhaps `proposed` or `candidate` would be better names, but what do I know?)
 
 > We can also insert multiple rows this way:
-> ```postgresql
+> ```sql
 > insert into tasks (account_id, task_name, task_desc)
 > values (1, 'test task', 'This is a test task'),
 >        (1, 'test task 2', 'Another task')
@@ -97,7 +97,7 @@ db.Clauses(clause.OnConflict{
 
 What if we wanted soft-delete functionality for this table? We'd need a column like `is_deleted`, or `deleted_at`:
 
-```postgresql
+```sql
 create table tasks
 (
     account_id integer not null,
@@ -113,7 +113,7 @@ Now if we create a task named `abc`, delete it, then create a new one;
 the newly created entry will conflict with the deleted one!
 We should keep that from happening using a _partial index_:
 
-```postgresql
+```sql
 create unique index if not exists unq_tasks_index
     on tasks (account_id, task_name)
     -- added
@@ -124,7 +124,7 @@ Now uniqueness checks are performed only among non-deleted rows. Cool.
 
 We should also modify our query. We add the `deleted_at` column to 
 the column list, corresponding values, and the update set:
-```postgresql
+```sql
 insert into tasks (account_id, task_name, task_desc, deleted_at)
 values (1, 'test task', 'This is a test task', null)
 on conflict (account_id, task_name)
@@ -143,11 +143,12 @@ Now that we have a _partial_ index; our conflict condition does not match an exi
 Fortunately, we can pass a `where` clause as an
 [index predicate](https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT):
 
-```postgresql
+```sql
 insert into tasks (account_id, task_name, task_desc, deleted_at)
 values (1, 'test task', 'This is a test task', null)
 on conflict (account_id, task_name)
-    where deleted_at is null --added
+    -- added
+    where deleted_at is null
 do update set
     task_desc=excluded.task_desc,
     deleted_at=excluded.deleted_at;
