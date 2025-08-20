@@ -1,4 +1,176 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kubuzetto's blog</title><link>/</link><description>Recent content on kubuzetto's blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 17 Jun 2025 03:50:10 +0300</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Implementing MongoDB Test Fixtures in Go</title><link>/posts/go-mongo-fixtures/</link><pubDate>Tue, 17 Jun 2025 03:50:10 +0300</pubDate><guid>/posts/go-mongo-fixtures/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kubuzetto's blog</title><link>/</link><description>Recent content on kubuzetto's blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 21 Aug 2025 02:35:04 +0300</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml"/><item><title>Writing ON CONFLICT Clauses on Partial Indexes using GORM</title><link>/posts/go-partial-on-conflict/</link><pubDate>Thu, 21 Aug 2025 02:35:04 +0300</pubDate><guid>/posts/go-partial-on-conflict/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>PostgreSQL&amp;rsquo;s &lt;code>ON CONFLICT&lt;/code> clause is a useful construct that allows you to
+handle cases where an insertion may violate a uniqueness constraint. It is
+not standard SQL syntax, but an extension, like SQLite&amp;rsquo;s &lt;code>INSERT OR REPLACE&lt;/code>.&lt;/p>
+&lt;p>Let&amp;rsquo;s say we have a table named &lt;code>tasks&lt;/code> like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> tasks
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> account_id integer &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_name text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- Yes, I prefer lowercase SQL. Sue me
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Say we want tasks to have unique names for each account. Let&amp;rsquo;s define a unique index for it:&lt;/p></description><content>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>PostgreSQL&amp;rsquo;s &lt;code>ON CONFLICT&lt;/code> clause is a useful construct that allows you to
+handle cases where an insertion may violate a uniqueness constraint. It is
+not standard SQL syntax, but an extension, like SQLite&amp;rsquo;s &lt;code>INSERT OR REPLACE&lt;/code>.&lt;/p>
+&lt;p>Let&amp;rsquo;s say we have a table named &lt;code>tasks&lt;/code> like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> tasks
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> account_id integer &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_name text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- Yes, I prefer lowercase SQL. Sue me
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Say we want tasks to have unique names for each account. Let&amp;rsquo;s define a unique index for it:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">unique&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> unq_tasks_index
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">on&lt;/span> tasks (account_id, task_name);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s say we need to perform an upsert operation on this table.
+Maybe we have a wacky endpoint that either rewrites the description of
+an existing task, or creates one anew. I don&amp;rsquo;t know; I just want to get to the point.&lt;/p>
+&lt;p>To &lt;strong>upsert&lt;/strong>; we can write the following query:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This does one of two things, atomically:&lt;/p>
+&lt;ul>
+&lt;li>If an entry with the same &lt;code>(account_id, task_name)&lt;/code> pair exists,
+it simply &lt;em>updates&lt;/em> the &lt;code>task_desc&lt;/code> field.&lt;/li>
+&lt;li>If such an entry does not exist, it &lt;em>inserts&lt;/em> it.&lt;/li>
+&lt;/ul>
+&lt;p>&lt;code>excluded&lt;/code> is a keyword here; referring to the row that is newly being inserted.
+(Perhaps &lt;code>proposed&lt;/code> or &lt;code>candidate&lt;/code> would be better names, but what do I know?)&lt;/p>
+&lt;blockquote>
+&lt;p>We can also insert multiple rows this way:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task 2&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;Another task&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>But there is an important edge case here! If the proposed rows conflict &lt;em>&lt;strong>with each other&lt;/strong>&lt;/em>, then you get the following error:&lt;/p>
+&lt;pre tabindex="0">&lt;code>[21000] ERROR: ON CONFLICT DO UPDATE command cannot affect row a second time
+&lt;/code>&lt;/pre>&lt;p>This behavior is documented &lt;a href="https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT">here&lt;/a>:&lt;/p>
+&lt;pre tabindex="0">&lt;code>INSERT with an ON CONFLICT DO UPDATE clause is a &amp;#34;deterministic&amp;#34; statement.
+This means that the command will not be allowed to affect any single existing
+row more than once; a cardinality violation error will be raised when this
+situation arises.
+&lt;/code>&lt;/pre>&lt;p>Be careful if you&amp;rsquo;re using this variant!&lt;/p>
+&lt;/blockquote>
+&lt;p>Raw query is fine and all, but if we wanted to achieve the same behavior using GORM,
+we can use &lt;code>clauses.OnConflict&lt;/code> &lt;a href="https://gorm.io/docs/create.html#Upsert-On-Conflict">like this&lt;/a>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">Task&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">AccountID&lt;/span> &lt;span style="color:#66d9ef">uint&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">TaskName&lt;/span>, &lt;span style="color:#a6e22e">TaskDesc&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">task&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">Task&lt;/span>{&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;test task&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;This is a test task&amp;#34;&lt;/span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">db&lt;/span>.&lt;span style="color:#a6e22e">Clauses&lt;/span>(&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">OnConflict&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Columns&lt;/span>: []&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Column&lt;/span>{{&lt;span style="color:#a6e22e">Name&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;account_id&amp;#34;&lt;/span>}, {&lt;span style="color:#a6e22e">Name&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;task_name&amp;#34;&lt;/span>}},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">DoUpdates&lt;/span>: &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">AssignmentColumns&lt;/span>([]&lt;span style="color:#66d9ef">string&lt;/span>{&lt;span style="color:#e6db74">&amp;#34;task_desc&amp;#34;&lt;/span>}),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}).&lt;span style="color:#a6e22e">Create&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">task&lt;/span>)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="problem">Problem&lt;/h2>
+&lt;p>What if we wanted soft-delete functionality for this table? We&amp;rsquo;d need a column like &lt;code>is_deleted&lt;/code>, or &lt;code>deleted_at&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> tasks
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> account_id integer &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_name text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">-- added
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> deleted_at timestamp with time zone
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>That&amp;rsquo;s easy, but now our unique index does not make sense.
+Now if we create a task named &lt;code>abc&lt;/code>, delete it, then create a new one;
+the newly created entry will conflict with the deleted one!
+We should keep that from happening using a &lt;em>partial index&lt;/em>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">unique&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> unq_tasks_index
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">on&lt;/span> tasks (account_id, task_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">-- added
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> deleted_at &lt;span style="color:#66d9ef">is&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now uniqueness checks are performed only among non-deleted rows. Cool.&lt;/p>
+&lt;p>We should also modify our query. We add the &lt;code>deleted_at&lt;/code> column to
+the column list, corresponding values, and the update set:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc, deleted_at)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>, &lt;span style="color:#66d9ef">null&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> deleted_at&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>deleted_at;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After this, converting it to GORM is trivi-&lt;/p>
+&lt;pre tabindex="0">&lt;code>[42P10] ERROR: there is no unique or exclusion constraint matching the ON CONFLICT specification
+&lt;/code>&lt;/pre>&lt;p>Oh. We have an error. Of course.&lt;/p>
+&lt;p>Now that we have a &lt;em>partial&lt;/em> index; our conflict condition does not match an existing index.&lt;/p>
+&lt;p>Fortunately, we can pass a &lt;code>where&lt;/code> clause as an
+&lt;a href="https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT">index predicate&lt;/a>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc, deleted_at)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>, &lt;span style="color:#66d9ef">null&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">where&lt;/span> deleted_at &lt;span style="color:#66d9ef">is&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span> &lt;span style="color:#75715e">--added
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> deleted_at&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>deleted_at;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then the partial index is properly inferred, and the query works as intended.&lt;/p>
+&lt;p>Converting this to GORM &lt;em>is&lt;/em> trivial:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">Task&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">AccountID&lt;/span> &lt;span style="color:#66d9ef">uint&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">TaskName&lt;/span>, &lt;span style="color:#a6e22e">TaskDesc&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">DeletedAt&lt;/span> &lt;span style="color:#a6e22e">time&lt;/span>.&lt;span style="color:#a6e22e">Time&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">task&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">Task&lt;/span>{&lt;span style="color:#a6e22e">AccountID&lt;/span>: &lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#a6e22e">TaskName&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;test task&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">TaskDesc&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;This is a test task&amp;#34;&lt;/span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">db&lt;/span>.&lt;span style="color:#a6e22e">Clauses&lt;/span>(&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">OnConflict&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Columns&lt;/span>: []&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Column&lt;/span>{{&lt;span style="color:#a6e22e">Name&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;account_id&amp;#34;&lt;/span>}, {&lt;span style="color:#a6e22e">Name&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;task_name&amp;#34;&lt;/span>}},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">DoUpdates&lt;/span>: &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">AssignmentColumns&lt;/span>([]&lt;span style="color:#66d9ef">string&lt;/span>{&lt;span style="color:#e6db74">&amp;#34;task_desc&amp;#34;&lt;/span>}),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// added
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">TargetWhere&lt;/span>: &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Where&lt;/span>{&lt;span style="color:#a6e22e">Exprs&lt;/span>: []&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Expression&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Eq&lt;/span>{&lt;span style="color:#a6e22e">Column&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;deleted_at&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">Value&lt;/span>: &lt;span style="color:#66d9ef">nil&lt;/span>},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }},
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}).&lt;span style="color:#a6e22e">Create&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">task&lt;/span>)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The &lt;code>TargetWhere&lt;/code> field of &lt;code>clauses.OnConflict&lt;/code> lets us provide the index predicate here.&lt;/p>
+&lt;blockquote>
+&lt;p>Do not confuse it with the &lt;code>Where&lt;/code> field, which is a regular
+&lt;code>WHERE&lt;/code> that goes at the &lt;em>end&lt;/em> of the clause.&lt;/p>
+&lt;/blockquote>
+&lt;p>We can perform atomic upsert operations on a table with a partial index using GORM like this.&lt;/p>
+&lt;h2 id="why-did-i-write-a-blog-post-on-this">Why did I write a blog post on this?&lt;/h2>
+&lt;p>Because the &lt;code>TargetWhere&lt;/code> field does not exist in GORM version v1.21.3, which is what I had to use in a
+project due to, uhh, reasons. Mind that the latest version is &amp;gt; v1.30; and the problem has long been
+addressed with &lt;a href="https://github.com/go-gorm/gorm/commit/dd8bf88eb9abdac71a290222ee2f70cf293c662b">this commit&lt;/a>,
+&lt;strong>four years ago&lt;/strong> (The joys of enterprise software).&lt;/p>
+&lt;p>I ended up writing a temporary duplicate for the &lt;code>OnConflict&lt;/code> clause like this,
+along with a TODO message strongly suggesting we update our dependencies.&lt;/p>
+&lt;p>Note that I used the same field names as &lt;code>clauses.OnConflict&lt;/code> in v1.30.1,
+so I can simply replace this with the original clause once our dependency is upgraded.
+This version is also missing other unused fields, and some value checks etc. for brevity:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">PartialOnConflict&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Columns&lt;/span> []&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Column&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">TargetWhere&lt;/span> &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Where&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">DoUpdates&lt;/span> &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> (&lt;span style="color:#a6e22e">c&lt;/span> &lt;span style="color:#a6e22e">PartialOnConflict&lt;/span>) &lt;span style="color:#a6e22e">Build&lt;/span>(&lt;span style="color:#a6e22e">b&lt;/span> &lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Builder&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">b&lt;/span>.&lt;span style="color:#a6e22e">WriteByte&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;(&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span>, &lt;span style="color:#a6e22e">e&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#66d9ef">range&lt;/span> &lt;span style="color:#a6e22e">c&lt;/span>.&lt;span style="color:#a6e22e">Columns&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &amp;gt; &lt;span style="color:#ae81ff">0&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">b&lt;/span>.&lt;span style="color:#a6e22e">WriteByte&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;,&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">b&lt;/span>.&lt;span style="color:#a6e22e">WriteQuoted&lt;/span>(&lt;span style="color:#a6e22e">e&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">b&lt;/span>.&lt;span style="color:#a6e22e">WriteString&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;) WHERE &amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">c&lt;/span>.&lt;span style="color:#a6e22e">TargetWhere&lt;/span>.&lt;span style="color:#a6e22e">Build&lt;/span>(&lt;span style="color:#a6e22e">b&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">b&lt;/span>.&lt;span style="color:#a6e22e">WriteString&lt;/span>(&lt;span style="color:#e6db74">&amp;#34; DO UPDATE SET &amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">c&lt;/span>.&lt;span style="color:#a6e22e">DoUpdates&lt;/span>.&lt;span style="color:#a6e22e">Build&lt;/span>(&lt;span style="color:#a6e22e">b&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> (&lt;span style="color:#a6e22e">PartialOnConflict&lt;/span>) &lt;span style="color:#a6e22e">Name&lt;/span>() &lt;span style="color:#66d9ef">string&lt;/span> { &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#e6db74">&amp;#34;ON CONFLICT&amp;#34;&lt;/span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">func&lt;/span> (&lt;span style="color:#a6e22e">c&lt;/span> &lt;span style="color:#a6e22e">PartialOnConflict&lt;/span>) &lt;span style="color:#a6e22e">MergeClause&lt;/span>(&lt;span style="color:#a6e22e">m&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">clause&lt;/span>.&lt;span style="color:#a6e22e">Clause&lt;/span>) { &lt;span style="color:#a6e22e">m&lt;/span>.&lt;span style="color:#a6e22e">Expression&lt;/span> = &lt;span style="color:#a6e22e">c&lt;/span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>As far as I could see, the issue and the corresponding fix in GORM was not explicitly documented
+in the changelog, but I might have missed it too. If you found yourself in a similar situation,
+I hope this blog post explains the situation, and encourages you to keep your dependencies up-to-date.&lt;/p>
+&lt;p>The rest of you, I wish you productive days. Go now.&lt;/p></content></item><item><title>Implementing MongoDB Test Fixtures in Go</title><link>/posts/go-mongo-fixtures/</link><pubDate>Tue, 17 Jun 2025 03:50:10 +0300</pubDate><guid>/posts/go-mongo-fixtures/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>At some point in the recent past; I needed to port the integration tests of a Go service using PostgreSQL
 to MongoDB. I was surprised by the lack of resources for loading test fixtures, so I decided to document
 my approach here.&lt;/p>
