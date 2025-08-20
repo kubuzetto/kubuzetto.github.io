@@ -3,7 +3,7 @@
 handle cases where an insertion may violate a uniqueness constraint. It is
 not standard SQL syntax, but an extension, like SQLite&amp;rsquo;s &lt;code>INSERT OR REPLACE&lt;/code>.&lt;/p>
 &lt;p>Let&amp;rsquo;s say we have a table named &lt;code>tasks&lt;/code> like this:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> tasks
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> tasks
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> account_id integer &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_name text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
@@ -15,7 +15,7 @@ not standard SQL syntax, but an extension, like SQLite&amp;rsquo;s &lt;code>INSE
 handle cases where an insertion may violate a uniqueness constraint. It is
 not standard SQL syntax, but an extension, like SQLite&amp;rsquo;s &lt;code>INSERT OR REPLACE&lt;/code>.&lt;/p>
 &lt;p>Let&amp;rsquo;s say we have a table named &lt;code>tasks&lt;/code> like this:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> tasks
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> tasks
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> account_id integer &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_name text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
@@ -23,16 +23,16 @@ not standard SQL syntax, but an extension, like SQLite&amp;rsquo;s &lt;code>INSE
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- Yes, I prefer lowercase SQL. Sue me
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Say we want tasks to have unique names for each account. Let&amp;rsquo;s define a unique index for it:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">unique&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> unq_tasks_index
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">unique&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> unq_tasks_index
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">on&lt;/span> tasks (account_id, task_name);
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s say we need to perform an upsert operation on this table.
 Maybe we have a wacky endpoint that either rewrites the description of
 an existing task, or creates one anew. I don&amp;rsquo;t know; I just want to get to the point.&lt;/p>
 &lt;p>To &lt;strong>upsert&lt;/strong>; we can write the following query:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc)
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded.task_desc;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This does one of two things, atomically:&lt;/p>
 &lt;ul>
 &lt;li>If an entry with the same &lt;code>(account_id, task_name)&lt;/code> pair exists,
@@ -43,11 +43,11 @@ it simply &lt;em>updates&lt;/em> the &lt;code>task_desc&lt;/code> field.&lt;/li>
 (Perhaps &lt;code>proposed&lt;/code> or &lt;code>candidate&lt;/code> would be better names, but what do I know?)&lt;/p>
 &lt;blockquote>
 &lt;p>We can also insert multiple rows this way:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc)
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>),
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task 2&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;Another task&amp;#39;&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded.task_desc;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>But there is an important edge case here! If the proposed rows conflict &lt;em>&lt;strong>with each other&lt;/strong>&lt;/em>, then you get the following error:&lt;/p>
 &lt;pre tabindex="0">&lt;code>[21000] ERROR: ON CONFLICT DO UPDATE command cannot affect row a second time
 &lt;/code>&lt;/pre>&lt;p>This behavior is documented &lt;a href="https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT">here&lt;/a>:&lt;/p>
@@ -72,44 +72,45 @@ we can use &lt;code>clauses.OnConflict&lt;/code> &lt;a href="https://gorm.io/doc
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}).&lt;span style="color:#a6e22e">Create&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>&lt;span style="color:#a6e22e">task&lt;/span>)
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="problem">Problem&lt;/h2>
 &lt;p>What if we wanted soft-delete functionality for this table? We&amp;rsquo;d need a column like &lt;code>is_deleted&lt;/code>, or &lt;code>deleted_at&lt;/code>:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> tasks
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> tasks
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> account_id integer &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_name text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc text &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">-- added
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> deleted_at timestamp with time zone
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> deleted_at &lt;span style="color:#66d9ef">timestamp&lt;/span> &lt;span style="color:#66d9ef">with&lt;/span> time &lt;span style="color:#66d9ef">zone&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>That&amp;rsquo;s easy, but now our unique index does not make sense.
 Now if we create a task named &lt;code>abc&lt;/code>, delete it, then create a new one;
 the newly created entry will conflict with the deleted one!
 We should keep that from happening using a &lt;em>partial index&lt;/em>:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">unique&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> unq_tasks_index
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">unique&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">exists&lt;/span> unq_tasks_index
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">on&lt;/span> tasks (account_id, task_name)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">-- added
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> deleted_at &lt;span style="color:#66d9ef">is&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now uniqueness checks are performed only among non-deleted rows. Cool.&lt;/p>
 &lt;p>We should also modify our query. We add the &lt;code>deleted_at&lt;/code> column to
 the column list, corresponding values, and the update set:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc, deleted_at)
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc, deleted_at)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>, &lt;span style="color:#66d9ef">null&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> deleted_at&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>deleted_at;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded.task_desc,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> deleted_at&lt;span style="color:#f92672">=&lt;/span>excluded.deleted_at;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After this, converting it to GORM is trivi-&lt;/p>
 &lt;pre tabindex="0">&lt;code>[42P10] ERROR: there is no unique or exclusion constraint matching the ON CONFLICT specification
 &lt;/code>&lt;/pre>&lt;p>Oh. We have an error. Of course.&lt;/p>
 &lt;p>Now that we have a &lt;em>partial&lt;/em> index; our conflict condition does not match an existing index.&lt;/p>
 &lt;p>Fortunately, we can pass a &lt;code>where&lt;/code> clause as an
 &lt;a href="https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT">index predicate&lt;/a>:&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-postgresql" data-lang="postgresql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc, deleted_at)
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tasks (account_id, task_name, task_desc, deleted_at)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;test task&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;This is a test task&amp;#39;&lt;/span>, &lt;span style="color:#66d9ef">null&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">on&lt;/span> conflict (account_id, task_name)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">where&lt;/span> deleted_at &lt;span style="color:#66d9ef">is&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span> &lt;span style="color:#75715e">--added
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>task_desc,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> deleted_at&lt;span style="color:#f92672">=&lt;/span>excluded&lt;span style="color:#ae81ff">.&lt;/span>deleted_at;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">-- added
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> deleted_at &lt;span style="color:#66d9ef">is&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> task_desc&lt;span style="color:#f92672">=&lt;/span>excluded.task_desc,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> deleted_at&lt;span style="color:#f92672">=&lt;/span>excluded.deleted_at;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then the partial index is properly inferred, and the query works as intended.&lt;/p>
 &lt;p>Converting this to GORM &lt;em>is&lt;/em> trivial:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#a6e22e">Task&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> {
