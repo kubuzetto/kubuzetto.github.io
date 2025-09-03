@@ -171,10 +171,7 @@ This version is also missing other unused fields, and some value checks etc. for
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>As far as I could see, the issue and the corresponding fix in GORM was not explicitly documented
 in the changelog, but I might have missed it too. If you found yourself in a similar situation,
 I hope this blog post explains the situation, and encourages you to keep your dependencies up-to-date.&lt;/p>
-&lt;p>The rest of you, I wish you productive days. Go now.&lt;/p>
-&lt;hr>
-&lt;!-- raw HTML omitted -->
-&lt;!-- raw HTML omitted --></content></item><item><title>Implementing MongoDB Test Fixtures in Go</title><link>/posts/go-mongo-fixtures/</link><pubDate>Tue, 17 Jun 2025 03:50:10 +0300</pubDate><guid>/posts/go-mongo-fixtures/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>The rest of you, I wish you productive days. Go now.&lt;/p></content></item><item><title>Implementing MongoDB Test Fixtures in Go</title><link>/posts/go-mongo-fixtures/</link><pubDate>Tue, 17 Jun 2025 03:50:10 +0300</pubDate><guid>/posts/go-mongo-fixtures/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>At some point in the recent past; I needed to port the integration tests of a Go service using PostgreSQL
 to MongoDB. I was surprised by the lack of resources for loading test fixtures, so I decided to document
 my approach here.&lt;/p>
@@ -473,10 +470,7 @@ provide an impossible-to-match filter to it, so it never matches, therefore it a
 &lt;pre tabindex="0">&lt;code>=== RUN TestLoadFixtures
 --- PASS: TestLoadFixtures (0.01s)
 &lt;/code>&lt;/pre>&lt;p>If we add extra assertions, we see that the timestamps are correctly evaluated.&lt;/p>
-&lt;p>That&amp;rsquo;s all I have for tonight. Go now.&lt;/p>
-&lt;hr>
-&lt;!-- raw HTML omitted -->
-&lt;!-- raw HTML omitted --></content></item><item><title>Automatic Go Union Deserialization Dispatch with Tags</title><link>/posts/go-deser-dispatch/</link><pubDate>Mon, 02 Jun 2025 00:27:23 +0300</pubDate><guid>/posts/go-deser-dispatch/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>That&amp;rsquo;s all I have for tonight. Go now.&lt;/p></content></item><item><title>Automatic Go Union Deserialization Dispatch with Tags</title><link>/posts/go-deser-dispatch/</link><pubDate>Mon, 02 Jun 2025 00:27:23 +0300</pubDate><guid>/posts/go-deser-dispatch/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>Ok, this will be a short one.&lt;/p>
 &lt;p>In the &lt;a href="/posts/go-axum-handlers-pt2/">previous posts&lt;/a>; we tried to reduce endpoint handler boilerplate in Go
 by imitating the Axum magic functions. This post is &lt;em>&lt;strong>not&lt;/strong>&lt;/em> about that, but I think one of the tricks we
@@ -744,10 +738,7 @@ It&amp;rsquo;s late here, so instead I want to get to the point and go to sleep.
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">pageSize&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">pageSizes&lt;/span>[&lt;span style="color:#a6e22e">itemType&lt;/span>]
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>which we would have to maintain and make sure we didn&amp;rsquo;t miss any of the keys.&lt;/p>
-&lt;p>Anyway, this is all I have for today. Go now.&lt;/p>
-&lt;hr>
-&lt;!-- raw HTML omitted -->
-&lt;!-- raw HTML omitted --></content></item><item><title>Axum-style Magic Handler Functions in Go, Part 2</title><link>/posts/go-axum-handlers-pt2/</link><pubDate>Fri, 27 Dec 2024 23:21:56 +0300</pubDate><guid>/posts/go-axum-handlers-pt2/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>Anyway, this is all I have for today. Go now.&lt;/p></content></item><item><title>Axum-style Magic Handler Functions in Go, Part 2</title><link>/posts/go-axum-handlers-pt2/</link><pubDate>Fri, 27 Dec 2024 23:21:56 +0300</pubDate><guid>/posts/go-axum-handlers-pt2/</guid><description>&lt;h2 id="introduction">Introduction&lt;/h2>
 &lt;p>In the &lt;a href="/posts/go-axum-handlers/">first part&lt;/a> of this blog post, we tried to replicate the
 &lt;a href="https://github.com/alexpusch/rust-magic-patterns/tree/master/axum-style-magic-function-param">magic of axum&lt;/a>
 in Go. In the end, we had endpoint handlers that looked like this:&lt;/p>
@@ -1165,10 +1156,7 @@ We piggybacked on the &lt;code>io.Closer&lt;/code> interface, but if you write y
 in them.&lt;/p>
 &lt;/li>
 &lt;/ul>
-&lt;p>That’s all I have for this post. Go now.&lt;/p>
-&lt;hr>
-&lt;!-- raw HTML omitted -->
-&lt;!-- raw HTML omitted --></content></item><item><title>Axum-style Magic Handler Functions in Go, Part 1</title><link>/posts/go-axum-handlers/</link><pubDate>Sat, 14 Dec 2024 15:30:22 +0300</pubDate><guid>/posts/go-axum-handlers/</guid><description>&lt;blockquote>
+&lt;p>That’s all I have for this post. Go now.&lt;/p></content></item><item><title>Axum-style Magic Handler Functions in Go, Part 1</title><link>/posts/go-axum-handlers/</link><pubDate>Sat, 14 Dec 2024 15:30:22 +0300</pubDate><guid>/posts/go-axum-handlers/</guid><description>&lt;blockquote>
 &lt;p>&lt;a href="/posts/go-axum-handlers-pt2/">Part 2 is out!&lt;/a>&lt;/p>
 &lt;/blockquote>
 &lt;h2 id="introduction">Introduction&lt;/h2>
@@ -1699,10 +1687,7 @@ input types at the end of the handler like this:&lt;/p>
 2024/12/17 02:24:35 INFO endpoint start route=/users request_id=16046b80-1de9-4f32-a242-03237aff81c6
 2024/12/17 02:24:35 INFO endpoint end route=/users request_id=16046b80-1de9-4f32-a242-03237aff81c6
 400: {&amp;#34;error&amp;#34;:&amp;#34;invalid character &amp;#39;{&amp;#39; looking for beginning of object key string&amp;#34;}
-&lt;/code>&lt;/pre>&lt;p>That&amp;rsquo;s all I have for this post. Go now.&lt;/p>
-&lt;hr>
-&lt;!-- raw HTML omitted -->
-&lt;!-- raw HTML omitted --></content></item><item><title>Devrim Şahin (kubuzetto)</title><link>/pages/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/pages/about/</guid><description>&lt;p>35-year-old staff software engineer serving code the old-fashioned way.
+&lt;/code>&lt;/pre>&lt;p>That&amp;rsquo;s all I have for this post. Go now.&lt;/p></content></item><item><title>Devrim Şahin (kubuzetto)</title><link>/pages/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/pages/about/</guid><description>&lt;p>35-year-old staff software engineer serving code the old-fashioned way.
 Currently working in &lt;a href="https://www.picussecurity.com/">Picus Security&lt;/a>.&lt;/p>
 &lt;p>You can contact me at: &lt;a href="https://linkedin.com/in/devrimsahin">LinkedIn&lt;/a> | &lt;a href="https://github.com/kubuzetto">GitHub&lt;/a>&lt;/p>
 &lt;p>This blog mostly contains my opinionated ramblings and personal experiments
