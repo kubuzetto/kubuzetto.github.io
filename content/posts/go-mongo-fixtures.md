@@ -405,3 +405,22 @@ When we run it again the test passes!
 If we add extra assertions, we see that the timestamps are correctly evaluated.
 
 That's all I have for tonight. Go now.
+
+---
+
+<script src="https://giscus.app/client.js"
+        data-repo="kubuzetto/kubuzetto.github.io"
+        data-repo-id="R_kgDONdgJ-A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDONdgJ-M4Cu7xa"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="preferred_color_scheme"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
